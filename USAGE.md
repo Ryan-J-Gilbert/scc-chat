@@ -28,6 +28,10 @@ Notes:
    - need to abstract tool usage
 - rcs examples https://rcs.bu.edu/examples/ for documents?
 
+- rough cost estimate for 4o-mini on azure https://azure.microsoft.com/en-us/pricing/calculator/:
+average chat = 2 querying tool calls, 3 ish questions roughly 6000 total tokens 50 50 input/output,
+100 a month = $0.22
+
 - check my job status?
  
 - telemetry disabled, will this be an issue? more info here: https://docs.trychroma.com/docs/overview/telemetry 
