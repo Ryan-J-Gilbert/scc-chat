@@ -246,11 +246,11 @@ class BUResearchScraper:
 if __name__ == "__main__":
     base_url = "https://www.bu.edu/tech/support/research/"
     scraper = BUResearchScraper(base_url)
-    scraper.start_scraping()
+    # scraper.start_scraping()
 
 
     # scraper = BUResearchScraper("https://www.bu.edu/tech/support/research/")
     # # article_data = scraper.extract_article_content("https://www.bu.edu/tech/support/research/software-and-programming/common-languages/python/python-ml/tensorflow/")
-    # article_data = scraper.extract_article_content("https://www.bu.edu/tech/support/research/software-and-programming/common-languages/matlab/")
-    # scraper.save_article(article_data)
+    article_data = scraper.extract_article_content("https://www.bu.edu/tech/support/research/system-usage/running-jobs/batch-script-examples/")
+    scraper.save_article(article_data)
     

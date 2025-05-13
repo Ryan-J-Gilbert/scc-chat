@@ -2,6 +2,7 @@ import os
 from sys import exit
 import json
 from openai import OpenAI
+import tiktoken
 
 from database import get_collection
 from chatformatting import print_streaming_response, format_message, ROLE_ASSISTANT
@@ -20,21 +21,63 @@ client = OpenAI(
 print(f"Initialized client with model: {MODEL_NAME}")
 
 
-def manage_context_window(messages, max_tokens=7000):
-    # print(messages)
-    """Estimate token count and trim messages if needed"""
-    # Simple estimation: ~2.5 tokens per word
-    total_tokens = sum(len(m["content"].split()) * 2.5 for m in messages if m.get("content"))
-    total_tokens += sum(len(str(m["tool_calls"]).split()) * 2.5 for m in messages if m.get("tool_calls"))
-    print("ESTIMATED TOKENS:", total_tokens)
-    # If approaching limit, keep system prompt and most recent messages
+
+def manage_context_window(messages, max_tokens=6000, model="gpt-4o"):
+    """Estimate token count using tiktoken and trim messages if needed"""
+
+    encoding = tiktoken.encoding_for_model(model)
+    
+    # Count tokens for each message and store with the message
+    messages_with_tokens = []
+    total_tokens = 0
+    
+    for m in messages:
+        tokens = 0
+        # Count tokens in content if present
+        if m.get("content"):
+            tokens += len(encoding.encode(m["content"]))
+        
+        # Count tokens in tool_calls if present
+        if m.get("tool_calls"):
+            tokens += len(encoding.encode(str(m["tool_calls"])))
+            
+        total_tokens += tokens
+        messages_with_tokens.append((m, tokens))
+    
+    print("ACCURATE TOKENS:", total_tokens)
+    
+    # If approaching limit, keep system prompt and drop older messages as needed
     if total_tokens > max_tokens:
         # Always keep system prompt
         system_prompt = next((m for m in messages if m["role"] == "system"), None)
-        # Keep only recent messages
-        recent_messages = messages[-5:]  # Adjust number as needed
-        messages = [system_prompt] + recent_messages if system_prompt else recent_messages
-        print("[System: Context window limit approached. Some conversation history was summarized.]")
+        system_tokens = 0
+        if system_prompt:
+            # Find token count for system prompt
+            for m, tokens in messages_with_tokens:
+                if m["role"] == "system":
+                    system_tokens = tokens
+                    break
+        
+        # Start with system prompt if it exists
+        kept_messages = [system_prompt] if system_prompt else []
+        current_tokens = system_tokens
+        
+        # Add messages from newest to oldest until we approach the limit
+        for m, tokens in reversed(messages_with_tokens):
+            # Skip system message as we've already added it
+            if m.get("role") == "system":
+                continue
+                
+            # Check if adding this message would exceed our limit
+            if current_tokens + tokens <= max_tokens:
+                kept_messages.insert(1 if system_prompt else 0, m)
+                current_tokens += tokens
+            else:
+                # Stop adding messages when we'd exceed the limit
+                break
+        
+        print(f"[System: Context window limit approached. Reduced from {len(messages)} to {len(kept_messages)} messages.]")
+        return kept_messages
     
     return messages
 
@@ -107,6 +150,7 @@ def scc_chatbot():
                         }
                     ]
                 })
+                # messages = manage_context_window(messages)
                 
                 # Add tool response to messages
                 messages.append({
@@ -114,6 +158,7 @@ def scc_chatbot():
                     "tool_call_id": tool_call.id,
                     "content": json.dumps(retrieved_docs)
                 })
+                messages = manage_context_window(messages)
                 
                 # Second pass - generate final response with retrieved documents using streaming
                 # print("\nSCC Assistant: ", end="", flush=True)

@@ -16,7 +16,7 @@ RETRIEVAL_TOOL_DEFINITION = {
     }
 }
 
-def hybrid_retrieve(collection, query, n_results_qa=2, n_results_article=1):
+def hybrid_retrieve(collection, query, n_results_qa=2, n_results_article=2):
     """Retrieve both types of documents for a given query"""
     
     # Get QA documents

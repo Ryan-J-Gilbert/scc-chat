@@ -1,3 +1,5 @@
+# see eventlogging.py
+
 # log message history
 
 # prompt user that chat is being logged, can run with flag --nolog

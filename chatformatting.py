@@ -1,6 +1,7 @@
 import re
 import sys
 import os
+import time
 
 # Check if running in a compatible terminal
 try:
@@ -405,7 +406,7 @@ def format_conversation(messages, terminal_width=80, user_color=BLUE, assistant_
     
     return "\n".join(formatted_messages)
 
-def print_streaming_response(response_stream, terminal_width=80, assistant_color=GREEN):
+def old_print_streaming_response(response_stream, terminal_width=80, assistant_color=GREEN):
     """Print streaming response tokens as they arrive with formatting.
     
     Args:
@@ -499,7 +500,11 @@ def print_streaming_response(response_stream, terminal_width=80, assistant_color
             if content:
                 # Count newlines to track how much to erase later
                 line_count += content.count('\n')
-                print(content, end="", flush=True)
+                # print(content, end="", flush=True)
+                # rather than print out whole chunk, smoothly print out char by char
+                for character in content:
+                    print(character, end="", flush=True)
+                    time.sleep(0.0075)
                 collected_content += content
     
     # Add a newline at the end of the raw content
