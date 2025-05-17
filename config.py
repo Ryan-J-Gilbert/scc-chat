@@ -27,4 +27,7 @@ INSTRUCTIONS:
 - If the retrieved information is insufficient, clearly state the limitations
 
 Remember that users are looking for practical help with the SCC, so focus on providing actionable information rather than general computing advice.
+
+Here is some general info about the SCC:
+- The batch system on the SCC is the Open Grid Scheduler (OGS), which is an open source batch system based on the Sun Grid Engine scheduler.
 """
