@@ -112,8 +112,8 @@ The RAG system uses a vector database to store and retrieve relevant documents:
   - [ ] Configure JWT secret properly
 - [ ] Improve error handling, especially with JWT validation
 - [ ] Fix formatting issues with ordered lists and bold text
-- [ ] DB analysis scripts
-- [ ] Optimize document storage and chunking
+- [ ] DB analysis scripts - in progress
+- [ ] Optimize document storage and chunking - in progress
 
 ### Medium Priority
 - [ ] Refine system prompt to focus responses on SCC information
@@ -126,7 +126,7 @@ The RAG system uses a vector database to store and retrieve relevant documents:
   - [ ] View queued jobs
   - [ ] Module availability checking
 - [ ] Make usage intuitive scraper.py (for collecting and formatting TechWeb pages)
-- [ ] Modifying scraper to use an LLM to parse webpages, with optimal chunking
+- [ ] Modifying scraper to use an LLM to parse webpages, with optimal chunking - in progress
 
 ## Resource Usage
 
