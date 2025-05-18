@@ -1,0 +1,60 @@
+{
+    "version": "1",
+    "prompts": [
+        {
+            "question": "How to run my Python script with 16 cores?",
+            "should_query": true,
+            "good_keywords": ["#$"],
+            "bad_keywords": ["#PBS"]
+        },
+        {
+            "question": "how do i run a job with a lot of memory",
+            "should_query": true,
+            "good_keywords": ["#$ -l mem_per_core"],
+            "bad_keywords": ["#PBS"]
+        },
+        {
+            "question": "what is the maximum runtime for jobs?",
+            "should_query": true,
+            "good_keywords": ["-l h_rt=hh:mm:ss", "12 hours"],
+            "bad_keywords": ["#PBS"]
+        },
+        {
+            "question": "How do I check the status of my submitted jobs?",
+            "should_query": true,
+            "good_keywords": ["qstat"],
+            "bad_keywords": []
+        },
+        {
+            "question": "How can I cancel a job?",
+            "should_query": true,
+            "good_keywords": ["qdel"],
+            "bad_keywords": []
+        },
+        {
+            "question": "What modules are available on the cluster?",
+            "should_query": true,
+            "good_keywords": ["module avail"],
+            "bad_keywords": []
+        },
+        {
+            "question": "How do I request GPU resources for my job?",
+            "should_query": true,
+            "good_keywords": ["-l gpu"],
+            "bad_keywords": ["#PBS"]
+        },
+        // {
+        //     "question": "Why did my job get killed after 12 hours?",
+        //     "should_query": false,
+        //     "good_keywords": [],
+        //     "bad_keywords": []
+        // },
+        {
+            "question": "Why did my job get killed after 12 hours?",
+            "should_query": false,
+            "good_keywords": [],
+            "bad_keywords": []
+        }
+    ]
+}
+
