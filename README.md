@@ -103,6 +103,10 @@ The RAG system uses a vector database to store and retrieve relevant documents:
 2. If needed, the query is used to retrieve relevant documents
 3. Retrieved documents are included in the context for the LLM's response
 
+## Additional Applications
+- `evaluator.py` can be used to evaluate a model, system prompt, and other settings for accurate SCC answering
+- `dbanalysis.py` can be ran as a notebook in an interactive settings for exploring the server database
+
 ## Development Roadmap
 
 ### High Priority

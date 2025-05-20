@@ -43,12 +43,6 @@
             "good_keywords": ["-l gpu"],
             "bad_keywords": ["#PBS"]
         },
-        // {
-        //     "question": "Why did my job get killed after 12 hours?",
-        //     "should_query": false,
-        //     "good_keywords": [],
-        //     "bad_keywords": []
-        // },
         {
             "question": "Why did my job get killed after 12 hours?",
             "should_query": false,
