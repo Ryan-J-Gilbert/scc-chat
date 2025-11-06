@@ -14,6 +14,8 @@ __pycache__/
 *.csv
 *.pdf
 
+*.jsonl
+
 # C extensions
 *.so
 

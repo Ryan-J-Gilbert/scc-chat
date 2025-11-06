@@ -4,7 +4,7 @@
 #$ -l h_rt=02:00:00  # 2-hour runtime
 #$ -l gpus=1         # Request 1 GPU
 #$ -l gpu_c=6.0      # CC needed for ollama
-#$ -l gpu_memory=16G # 16gb vram
+#$ -l gpu_memory=32G # 16gb vram
 #$ -m ea             # Email on end or abort
 #$ -j y              # Combine output and error files
 #$ -pe omp 8         # Request 8 cores

@@ -10,6 +10,9 @@ Set host
 Go to directory to run ollama bin if testing model chat:
 `/projectnb/scc-chat/ollama/bin`
 
+If needed set model dir:
+`export OLLAMA_MODELS=/projectnb/scc-chat/ollama/models`
+
 For running python script, load env:
 ```
 module load miniconda
