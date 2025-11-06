@@ -16,6 +16,23 @@ class TicketExtraction(BaseModel):
     resolution_steps: Optional[List[str]] = Field(None, description="Resolution steps or None if skipping")
 
 
+def load_processed_tickets(output_path):
+    """Load already processed ticket numbers from the output file."""
+    processed = set()
+    if os.path.exists(output_path):
+        try:
+            with open(output_path, "r") as f:
+                for line in f:
+                    if line.strip():
+                        data = json.loads(line)
+                        ticket_num = data.get("ticket_number")
+                        if ticket_num:
+                            processed.add(ticket_num)
+        except Exception as e:
+            print(f"Warning: Error loading processed tickets: {e}")
+    return processed
+
+
 async def async_classify_ticket(client, ticket: dict, sem) -> dict:
     full_text = f"""Short Description:
 {ticket.get('short_description', '')}
@@ -106,7 +123,7 @@ Analyst: I see your script is failing with exit code 1. The log indicates a "mod
 User: Yes, it works on my laptop but fails on SCC.  
 Analyst: SCC nodes may not have all modules installed by default. You should try loading the correct software module using the `module load` command, or check the documentation for required dependencies.  
 User: How do I know which module to load?  
-Analyst: Look at the error output, which should mention the missing module. Then, try `module avail` to see what’s available and `module load <module_name>` to add it.  
+Analyst: Look at the error output, which should mention the missing module. Then, try `module avail` to see what's available and `module load <module_name>` to add it.  
 User: That solved it, thank you!
 
 Ideal JSON:
@@ -203,6 +220,9 @@ if __name__ == "__main__":
     file_name = "/projectnb/scv/akamble/ServiceNow/output_251010.json"
     output_file = "/projectnb/scc-chat/research/ticketparsing/classified_tickets.jsonl"
 
+    accepted_file = "/projectnb/scc-chat/research/ticketparsing/accepted_tickets.txt"
+    rejected_file = "/projectnb/scc-chat/research/ticketparsing/rejected_tickets.txt"
+
     # Load JSON data
     with open(file_name, 'r') as f:
         data = json.load(f)
@@ -214,12 +234,25 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(data['result'])
     print(f"Loaded {len(df)} tickets")
+    
     remove_names = ["Aaron Fuegi", "Wayne Gilmore", "Laura Giannitrapani", "Charles Janke", "Jack Chan", "Manny Ruiz", "David Taylor", "Michael Dugan"]
     df = df[~df['assigned_to'].isin(remove_names)]
     print(f"Removed tickets assigned to {', '.join(remove_names[:3])}..., {len(df)} tickets remaining")
 
-    # Ensure output file exists (and is empty if restarting)
-    if not os.path.exists(output_file):
-        open(output_file, "w").close()
+    # Load already processed tickets
+    processed_tickets = load_processed_tickets(output_file)
+    print(f"Found {len(processed_tickets)} already processed tickets")
+    
+    # Filter out already processed tickets
+    df = df[~df['number'].isin(processed_tickets)]
+    print(f"Skipping already processed tickets, {len(df)} tickets remaining to process")
 
-    asyncio.run(main(df, output_file, batch_size=20))
+    if len(df) == 0:
+        print("No new tickets to process!")
+    else:
+        # Ensure output file exists
+        if not os.path.exists(output_file):
+            open(output_file, "w").close()
+
+        asyncio.run(main(df, output_file, batch_size=20))
+        print(f"Processing complete! Results appended to {output_file}")
