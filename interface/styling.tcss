@@ -1,0 +1,28 @@
+ChatMessage {
+    background: $boost;
+    margin: 1;
+    padding: 1;
+
+    /* bubble sizing */
+    min-width: 60;
+    max-width: 75;
+
+    /* IMPORTANT */
+    height: auto;
+}
+
+ChatMessage.user {
+    align-horizontal: right;
+    background: $primary;
+}
+
+ChatMessage.bot {
+    align-horizontal: left;
+    background: $boost;
+}
+
+
+InputBox {
+    height: 7;
+    dock: bottom;
+}

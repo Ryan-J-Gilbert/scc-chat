@@ -13,9 +13,10 @@ __pycache__/
 *.ipynb
 *.csv
 *.pdf
-
+*.json
 *.jsonl
 *.txt
+*/db/
 
 # C extensions
 *.so
