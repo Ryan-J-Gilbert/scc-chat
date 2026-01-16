@@ -7,6 +7,7 @@ from typing import List, Dict, Any
 
 from server.models.chat_models import Message, ToolCall, ChatResponse, UsageInfo
 from server.services.tools.base import BaseToolService
+from server.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -14,14 +15,16 @@ logger = logging.getLogger(__name__)
 class BaseLLMService(ABC):
     """Abstract base class for all LLM service implementations."""
     
-    def __init__(self, tools: List[BaseToolService]):
+    def __init__(self, tools: List[BaseToolService], system_prompt: str = None):
         """
         Initialize the LLM service with tools.
         
         Args:
             tools: List of tool services available to the LLM
+            system_prompt: Custom system prompt (defaults to settings.system_prompt)
         """
         self.tools: Dict[str, BaseToolService] = {tool.name: tool for tool in tools}
+        self.system_prompt = system_prompt or settings.system_prompt
         logger.info(f"Initialized LLM service with tools: {list(self.tools.keys())}")
     
     @abstractmethod
@@ -58,6 +61,27 @@ class BaseLLMService(ABC):
             List of tool definitions in OpenAI format
         """
         return [tool.get_tool_definition() for tool in self.tools.values()]
+    
+    def _ensure_system_message(self, messages: List[Message]) -> List[Message]:
+        """
+        Ensure the conversation starts with a system message.
+        
+        Args:
+            messages: Current message list
+            
+        Returns:
+            Messages with system message prepended if not present
+        """
+        # Check if first message is already a system message
+        if messages and messages[0].role == "system" and messages[0].content == self.system_prompt:
+            return messages
+        
+        # Prepend system message
+        system_message = Message(
+            role="system",
+            content=self.system_prompt
+        )
+        return [system_message] + messages
     
     def _execute_tools(self, tool_calls: List[ToolCall]) -> List[Message]:
         """
@@ -115,7 +139,9 @@ class BaseLLMService(ABC):
         Returns:
             ChatResponse with updated messages and usage info
         """
-        current_messages = messages.copy()
+        # Ensure system message is present
+        current_messages = self._ensure_system_message(messages)
+        
         total_usage = UsageInfo()
         iteration = 0
         

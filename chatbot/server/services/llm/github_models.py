@@ -22,7 +22,8 @@ class GithubModelsLLMService(BaseLLMService):
         api_key: str = None,
         model: str = None,
         max_tokens: int = None,
-        temperature: float = None
+        temperature: float = None,
+        system_prompt: str = None,
     ):
         """
         Initialize GitHub Models LLM service.
@@ -33,8 +34,9 @@ class GithubModelsLLMService(BaseLLMService):
             model: Model name (defaults to settings)
             max_tokens: Maximum tokens (defaults to settings)
             temperature: Temperature setting (defaults to settings)
+            system_prompt: Custom system prompt (defaults to settings)
         """
-        super().__init__(tools)
+        super().__init__(tools, system_prompt=system_prompt)
         
         self.api_key = api_key or settings.github_api_key
         self.model = model or settings.default_model
