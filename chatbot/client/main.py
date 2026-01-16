@@ -103,7 +103,8 @@ class ChatbotClient:
             # Update UI with all messages from response
             self.ui.messages = response_data.get("messages", [])
             
-            # Display the response
+            # Display only the NEW messages from the response
+            # This will display the user message we just sent plus assistant's response
             self.ui.display_response(response_data)
             
         except Exception as e:

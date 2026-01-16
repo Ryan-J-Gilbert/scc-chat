@@ -19,6 +19,7 @@ class TerminalChatInterface:
         """Initialize the terminal interface."""
         self.console = Console()
         self.messages: List[Dict[str, Any]] = []
+        self.displayed_message_count = 0  # Track how many messages we've displayed
     
     def display_welcome(self):
         """Display welcome message."""
@@ -114,6 +115,7 @@ Just type your question and I'll do my best to help!
         """Clear the terminal screen."""
         self.console.clear()
         self.display_welcome()
+        self.displayed_message_count = 0  # Reset counter
     
     def add_message(self, role: str, content: str):
         """
@@ -140,22 +142,33 @@ Just type your question and I'll do my best to help!
     def clear_messages(self):
         """Clear the message history."""
         self.messages = []
+        self.displayed_message_count = 0  # Reset counter
     
     def display_response(self, response_data: Dict[str, Any]):
         """
-        Display the full response from the server.
+        Display only the NEW messages from the server response.
         
         Args:
             response_data: Response dictionary from API
         """
         messages = response_data.get("messages", [])
         
-        for msg in messages:
+        # Only display messages we haven't displayed yet
+        new_messages = messages[self.displayed_message_count:]
+        
+        for msg in new_messages:
             role = msg.get("role")
             content = msg.get("content")
             tool_calls = msg.get("tool_calls")
             
-            if role == "assistant":
+            # Skip system messages (don't display them)
+            if role == "system":
+                continue
+            
+            if role == "user":
+                # Display user message
+                self.display_user_message(content)
+            elif role == "assistant":
                 if tool_calls:
                     # Display tool calls
                     for tc in tool_calls:
@@ -165,7 +178,12 @@ Just type your question and I'll do my best to help!
                     self.display_assistant_message(content)
             elif role == "tool":
                 # Optionally display tool results (currently hidden)
+                # You could uncomment this to see tool results:
+                # self.console.print(f"[dim]Tool result: {content[:100]}...[/dim]")
                 pass
+        
+        # Update the displayed message count
+        self.displayed_message_count = len(messages)
         
         # Display usage if available
         usage = response_data.get("usage")
