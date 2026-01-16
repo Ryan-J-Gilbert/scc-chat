@@ -1,144 +1,207 @@
-DEPRECATED
+# SCC Chatbot & Knowledge Base System
 
+A comprehensive RAG-powered (Retrieval-Augmented Generation) chatbot system for the Boston University Shared Computing Cluster (SCC). This project includes tools for data ingestion, knowledge base management, and an interactive chatbot interface.
 
-# HPC RAG Chatbot
+## Table of Contents
 
-A RAG (Retrieval-Augmented Generation) chatbot system for helping users with questions about the university's Shared Computing Cluster (SCC). The system consists of a client-server architecture where:
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Components](#components)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [Troubleshooting](#troubleshooting)
 
-- The server handles document retrieval, LLM inference, and conversation logging
-- The client manages the user interface and conversation history
+## Overview
+
+The SCC Chatbot system helps users navigate SCC resources, troubleshoot issues, and find answers to technical questions through:
+
+- **Knowledge Base Ingestion**: Scripts to parse and ingest support tickets, Q&A pairs, and TechWeb articles
+- **Vector Database**: ChromaDB-powered semantic search across SCC documentation
+- **RAG Chatbot**: AI assistant with tool-calling capabilities to search the knowledge base
+- **Terminal Interface**: Rich terminal-based chat interface for user interactions
+
+### Key Features
+
+- 🔍 Semantic search across multiple knowledge sources (tickets, documentation, articles)
+- 🤖 LLM-powered responses with retrieval augmentation
+- 🔧 Extensible tool system for different data sources
+- 🎨 Clean, modular architecture with separation of concerns
+- 📊 Support for multiple LLM providers (GitHub Models, OpenAI)
+- 💬 Interactive terminal UI with syntax highlighting
 
 ## System Architecture
 
-### Server
-- Built with FastAPI and Uvicorn
-- Connects to a vector database for document retrieval
-- Uses OpenAI-compatible API for LLM inference (via GitHub models or Azure)
-- Implements JWT authentication for session management
-- Logs all interactions in a SQLite database
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      DATA PIPELINE                          │
+├─────────────────────────────────────────────────────────────┤
+│  Ticket Parsing → JSON                                      │
+│  TechWeb Scraping → Parsed Articles                         │
+│  Q&A Extraction → Structured Pairs                          │
+│                     ↓                                       │
+│  ChromaDB Ingestion → Vector Embeddings                     │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                     CHATBOT SYSTEM                          │
+├─────────────────────────────────────────────────────────────┤
+│  Terminal Client ←→ FastAPI Server ←→ LLM Service           │
+│                          ↓                                  │
+│                    Tool Services                            │
+│                   (ChromaDB Search)                         │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Client
-- Command-line interface for interacting with the chatbot
-- Manages message history and conversation context
-- Handles streaming responses for real-time interaction
-- Formats messages for better readability in the terminal
+## Components
 
+### 1. Data Ingestion Pipeline
+
+#### Ticket Parsing (`scripts/parse_tickets.py`)
+- Parses SCC support ticket data
+- Extracts Q&A pairs and metadata
+- Outputs structured JSON
+
+#### TechWeb Article Scraping (`scripts/scrape_techweb.py`)
+- Scrapes SCC TechWeb documentation
+- Parses articles and metadata
+- Prepares content for ingestion
+
+#### ChromaDB Ingestion (`scripts/ingest_chromadb.py`)
+- Ingests parsed data into ChromaDB
+- Creates vector embeddings
+- Manages multiple collections (Q&A, documentation, etc.)
+
+**Example Usage:**
+```bash
+python scripts/ingest_chromadb.py \
+    --db-path ./chroma_db \
+    --collection qa_collection \
+    --json-path /path/to/qa_pairs.json
+```
+
+### 2. Chatbot Server
+
+FastAPI-based server with modular service architecture:
+
+- **Core Layer**: Configuration management, ChromaDB connections
+- **Service Layer**: 
+  - Tool services (ChromaDB search tools)
+  - LLM services (GitHub Models, OpenAI)
+- **API Layer**: REST endpoints for chat interactions
+
+**Key Endpoints:**
+- `POST /chat` - Main chat endpoint
+- `GET /health` - Health check
+
+### 3. Terminal Client
+
+Rich terminal interface for chatbot interaction:
+
+- Syntax highlighting and markdown rendering
+- Tool call visualization
+- Command system (quit, clear, help)
+- Token usage tracking
+
+## Installation
+
+### Prerequisites
+
+- Python 3.10+
+- pip
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Configuration
 
-### Server Configuration
-- Set up LLM API access:
-  - For development, set the `GITHUB_LLM_TOKEN` environment variable in your `.bashrc` file
-  - For production, consider using a `.env` file (implementation pending)
-- JWT secret configuration in `jwt_utils.py` (ensure this is properly secured for production)
-- Model and retrieval parameters in `config.py`
+### Environment Variables
 
-### Client Configuration
-- Default server URL can be configured in the client code or set via environment variable:
-  ```bash
-  export CHATBOT_SERVER_URL="http://your-server:port"
-  ```
+Create a `.env` file in the project root:
+
+```bash
+# API Keys
+GITHUB_API_KEY=your_github_token_here
+OPENAI_API_KEY=your_openai_key_optional
+
+# ChromaDB Configuration
+CHROMA_DB_PATH=./chroma_db
+QA_COLLECTION_NAME=qa_collection
+DOCS_COLLECTION_NAME=documentation_collection
+
+# LLM Configuration
+DEFAULT_MODEL=gpt-4o-mini
+MAX_TOKENS=1500
+TEMPERATURE=0.7
+
+# System Prompt (optional)
+SYSTEM_PROMPT="Your custom system prompt..."
+
+# Server Configuration
+SERVER_HOST=localhost
+SERVER_PORT=8000
+
+# Logging
+LOG_LEVEL=INFO
+```
+
+### System Prompt
+
+The default system prompt guides the chatbot's behavior. It can be customized via the `SYSTEM_PROMPT` environment variable or in `server/core/config.py`.
 
 ## Usage
 
-### Starting the Server
+### 1. Prepare Your Knowledge Base
+
+#### Parse Support Tickets
 ```bash
-cd /projectnb/scc-chat/research
-module load python3/3.12.4
-module load sqlite3/3.44.2
-source ragenv/bin/activate
-python server.py
+python scripts/parse_tickets.py \
+    --input /path/to/tickets \
+    --output ./data/qa_pairs.json
 ```
 
-The server will start on port 8000 by default (http://0.0.0.0:8000).
-
-### Running the Client
+#### Scrape TechWeb Articles
 ```bash
-cd /projectnb/scc-chat/research
-module load python3/3.12.4
-source ragenv/bin/activate
-python client.py
+python scripts/scrape_techweb.py \
+    --url https://scc.bu.edu/techweb \
+    --output ./data/articles.json
 ```
 
-### Client Command-Line Options
-```
-Options:
-  --server URL     Server URL (default: http://localhost:8000)
-  --debug          Enable debug output
-  --no-log         Disable logging
-  --nostream       Disable streaming responses
-```
-
-Example:
+#### Ingest into ChromaDB
 ```bash
-python client.py --server http://hpc-server:8000 --debug
+python scripts/ingest_chromadb.py \
+    --db-path ./chroma_db \
+    --collection qa_collection \
+    --json-path ./data/qa_pairs.json \
+    --batch-size 32
 ```
 
-## API Endpoints
+### 2. Start the Server
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/start_session` | POST | Initiates a new chat session and returns a JWT token |
-| `/chat` | POST | Processes chat messages and returns responses (supports streaming) |
-| `/health` | GET | Returns server health status |
+```bash
+python -m server.main
+# Or with uvicorn directly:
+uvicorn server.main:app --host localhost --port 8000 --reload
+```
 
-## Authentication
+The server will start on `http://localhost:8000`. API documentation is available at `http://localhost:8000/docs`.
 
-The system uses JWT tokens for authentication:
-1. Client requests a new session via `/start_session` with a username
-2. Server generates a unique chat ID and returns a JWT token
-3. Client includes this token with each subsequent request
-4. Server validates the token before processing requests
+### 3. Run the Client
 
-## Logging
+In a separate terminal:
 
-The system logs various events to a SQLite database:
-- User messages
-- Agent responses
-- Tool calls
-- Retrieval queries and results
-- Errors
+```bash
+python -m client.main
+# Or specify a custom server URL:
+python -m client.main --server http://localhost:8000
+```
 
-## Retrieval System
+### 4. Interact with the Chatbot
 
-The RAG system uses a vector database to store and retrieve relevant documents:
-1. User query is analyzed to determine if retrieval is needed
-2. If needed, the query is used to retrieve relevant documents
-3. Retrieved documents are included in the context for the LLM's response
-
-## Additional Applications
-- `evaluator.py` can be used to evaluate a model, system prompt, and other settings for accurate SCC answering
-- `dbanalysis.py` can be ran as a notebook in an interactive settings for exploring the server database
-
-## Development Roadmap
-
-### High Priority
-- [ ] Deploy to production
-  - [ ] Set up CORS middleware (currently commented out)
-  - [ ] Implement `.env` file for secure token management
-  - [ ] Configure JWT secret properly
-- [ ] Improve error handling, especially with JWT validation
-- [ ] Fix formatting issues with ordered lists and bold text
-- [ ] DB analysis scripts - in progress
-- [ ] Optimize document storage and chunking - in progress
-
-### Medium Priority
-- [ ] Refine system prompt to focus responses on SCC information
-- [ ] Improve tool call result formatting
-- [ ] Develop visual interface (Gradio integration previously attempted)
-
-### Future Features
-- [ ] IT ticket parsing and analysis
-- [ ] Additional tools for user job management
-  - [ ] View queued jobs
-  - [ ] Module availability checking
-- [ ] Make usage intuitive scraper.py (for collecting and formatting TechWeb pages)
-- [ ] Modifying scraper to use an LLM to parse webpages, with optimal chunking - in progress
-
-## Resource Usage
-
-- Currently using GitHub models free tier
-  - GPT-4o: 10 requests/min, 50/day
-  - GPT-4o mini: 15 requests/min, 150/day
-- Estimated Azure cost: ~$0.24 per 100 simple chats
-
+```
+You: How do I submit a job to the SCC?
