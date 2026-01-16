@@ -1,3 +1,5 @@
+DEPRECATED
+
 import os
 from sys import exit
 import json

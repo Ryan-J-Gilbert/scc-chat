@@ -1,3 +1,6 @@
+DEPRECATED
+
+
 # HPC RAG Chatbot
 
 A RAG (Retrieval-Augmented Generation) chatbot system for helping users with questions about the university's Shared Computing Cluster (SCC). The system consists of a client-server architecture where:

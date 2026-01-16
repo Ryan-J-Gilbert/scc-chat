@@ -1,3 +1,5 @@
+DEPRECATED
+
 Playground: https://github.com/marketplace/models/azure-openai/gpt-4o-mini/playground
 
 ENHANCED PROMPT:

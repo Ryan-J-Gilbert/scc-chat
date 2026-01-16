@@ -1,3 +1,5 @@
+DEPRECATED
+
 We need to make sure the chatbot is providing accurate answers for SCC specific questions.
 
 In evaluation.json, there are a few prompts with what we should and should not expect.  
