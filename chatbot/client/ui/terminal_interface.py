@@ -24,9 +24,11 @@ class TerminalChatInterface:
     def display_welcome(self):
         """Display welcome message."""
         welcome_text = """
-# RAG-Powered Chatbot
+# SCC Support Chatbot
 
 Welcome! I can help answer your questions using my knowledge base.
+Please do not include sensitive information. 
+Answers use AI and may be inaccurate. Use caution when running commands.
 
 **Commands:**
 - Type your question and press Enter
