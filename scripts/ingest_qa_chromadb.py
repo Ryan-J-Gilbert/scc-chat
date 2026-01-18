@@ -176,7 +176,7 @@ class ChromaDBIngestor:
 def main():
     """Main entry point for the script."""
     # Configuration
-    DB_PATH = "/projectnb/scc-chat/research/ticketparsing/db"
+    DB_PATH = "./chroma_db"
     JSON_PATH = "/projectnb/scc-chat/research/ticketparsing/qa_pairs.json"
     COLLECTION_NAME = "qa_collection"
     BATCH_SIZE = 32
