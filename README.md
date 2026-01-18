@@ -69,17 +69,48 @@ The SCC Chatbot system helps users navigate SCC resources, troubleshoot issues, 
 - Parses articles and metadata
 - Prepares content for ingestion
 
-#### ChromaDB Ingestion (`scripts/ingest_chromadb.py`)
-- Ingests parsed data into ChromaDB
+#### ChromaDB Ingestion
+
+**Q&A Pairs Ingestion** (`scripts/ingest_qa_chromadb.py`)
+- Ingests parsed Q&A pairs from JSON
 - Creates vector embeddings
-- Manages multiple collections (Q&A, documentation, etc.)
+- Manages Q&A collection
 
 **Example Usage:**
 ```bash
-python scripts/ingest_chromadb.py \
+python scripts/ingest_qa_chromadb.py \
     --db-path ./chroma_db \
     --collection qa_collection \
     --json-path /path/to/qa_pairs.json
+```
+
+**Documentation Ingestion** (`scripts/ingest_docs_chromadb.py`)
+- Ingests scraped TechWeb markdown articles
+- Ingests Q&A pairs from Excel spreadsheets
+- Unified collection for all documentation
+
+**Example Usage:**
+```bash
+# Ingest both articles and Q&A spreadsheet
+python scripts/ingest_docs_chromadb.py \
+    --db-path ./chroma_db \
+    --collection scc_documentation \
+    --articles ./scraped_content \
+    --qa-spreadsheet ./data/qa_spreadsheet.xlsx
+
+# Ingest only articles
+python scripts/ingest_docs_chromadb.py \
+    --db-path ./chroma_db \
+    --collection scc_documentation \
+    --articles ./scraped_content
+
+# Force re-ingestion
+python scripts/ingest_docs_chromadb.py \
+    --db-path ./chroma_db \
+    --collection scc_documentation \
+    --articles ./scraped_content \
+    --qa-spreadsheet ./data/qa_spreadsheet.xlsx \
+    --force
 ```
 
 ### 2. Chatbot Server
@@ -158,23 +189,32 @@ The default system prompt guides the chatbot's behavior. It can be customized vi
 
 ### 1. Prepare Your Knowledge Base
 
-#### Parse Support Tickets
+#### Scrape TechWeb Articles
+```bash
+python scripts/scrape_techweb.py \
+    --base-url https://www.bu.edu/tech/support/research/ \
+    --output ./scraped_content
+```
+
+#### Parse Support Tickets (if applicable)
 ```bash
 python scripts/parse_tickets.py \
     --input /path/to/tickets \
     --output ./data/qa_pairs.json
 ```
 
-#### Scrape TechWeb Articles
+#### Ingest Documentation into ChromaDB
 ```bash
-python scripts/scrape_techweb.py \
-    --url https://scc.bu.edu/techweb \
-    --output ./data/articles.json
-```
+# Ingest TechWeb articles and Q&A spreadsheet into unified collection
+python scripts/ingest_docs_chromadb.py \
+    --db-path ./chroma_db \
+    --collection scc_documentation \
+    --articles ./scraped_content \
+    --qa-spreadsheet ./data/RCSpages_QA.xlsx \
+    --batch-size 100
 
-#### Ingest into ChromaDB
-```bash
-python scripts/ingest_chromadb.py \
+# Ingest parsed Q&A pairs from tickets (separate collection)
+python scripts/ingest_qa_chromadb.py \
     --db-path ./chroma_db \
     --collection qa_collection \
     --json-path ./data/qa_pairs.json \
