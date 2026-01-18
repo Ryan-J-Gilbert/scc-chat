@@ -210,7 +210,7 @@ python scripts/ingest_docs_chromadb.py \
     --db-path ./chroma_db \
     --collection scc_documentation \
     --articles ./scraped_content \
-    --qa-spreadsheet ./data/RCSpages_QA.xlsx \
+    --qa-spreadsheet ../Data/RCSpages_edited_combined_questions_answers_copy1.xlsx \
     --batch-size 100
 
 # Ingest parsed Q&A pairs from tickets (separate collection)
