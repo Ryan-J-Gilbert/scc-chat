@@ -21,8 +21,7 @@ def get_tools() -> List[BaseToolService]:
     """
     tools = [
         ChromaDBQATool(),
-        # Uncomment when you have a docs collection:
-        # ChromaDBDocsTool(),
+        ChromaDBDocsTool(),
     ]
     return tools
 

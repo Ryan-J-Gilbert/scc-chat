@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # ChromaDB Configuration
     chroma_db_path: str = "./chroma_db"
     qa_collection_name: str = "qa_collection"
-    docs_collection_name: str = "documentation_collection"
+    docs_collection_name: str = "scc_documentation"
     
     # LLM Configuration
     default_model: str = "gpt-4o-mini"
