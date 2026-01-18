@@ -16,6 +16,7 @@ __pycache__/
 *.json
 *.jsonl
 *.txt
+!*/requirements.txt
 */db/
 
 # C extensions
