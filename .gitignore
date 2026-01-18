@@ -2,6 +2,7 @@
 scraped_content/
 embeddingsstore/
 embeddingsstoreold/
+chroma_db/
 *.zip
 *.db
 # Byte-compiled / optimized / DLL files
