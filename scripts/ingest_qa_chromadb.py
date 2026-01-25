@@ -134,7 +134,7 @@ class ChromaDBIngestor:
             batch_metas = metadatas[i:i + batch_size]
             batch_ids = ids[i:i + batch_size]
             
-            self.collection.add(
+            self.collection.upsert(
                 documents=batch_docs,
                 metadatas=batch_metas,
                 ids=batch_ids

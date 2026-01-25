@@ -168,7 +168,7 @@ DOCS_COLLECTION_NAME=documentation_collection
 # LLM Configuration
 DEFAULT_MODEL=gpt-4o-mini
 MAX_TOKENS=1500
-TEMPERATURE=0.7
+TEMPERATURE=0.2
 
 # System Prompt (optional)
 SYSTEM_PROMPT="Your custom system prompt..."

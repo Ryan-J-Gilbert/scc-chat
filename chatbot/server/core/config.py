@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
     
     # ChromaDB Configuration
-    chroma_db_path: str = "./chroma_db"
+    chroma_db_path: str = "../chroma_db"
     qa_collection_name: str = "qa_collection"
     docs_collection_name: str = "scc_documentation"
     

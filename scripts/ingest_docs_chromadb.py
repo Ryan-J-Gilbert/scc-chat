@@ -210,7 +210,7 @@ Source:
         ids: List[str],
         batch_size: int = DEFAULT_BATCH_SIZE
     ) -> None:
-        """
+        """x
         Ingest documents into ChromaDB in batches.
         
         Args:
@@ -235,7 +235,7 @@ Source:
             batch_ids = ids[i:i + batch_size]
             
             try:
-                self.collection.add(
+                self.collection.upsert(
                     documents=batch_docs,
                     metadatas=batch_metas,
                     ids=batch_ids
