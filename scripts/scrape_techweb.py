@@ -141,15 +141,22 @@ class BUResearchScraper:
     def extract_links_from_support_rows(self, soup):
         """Extract links from div elements with class 'clearfix support-row'."""
         links = []
-        support_rows = soup.find_all("div", class_="clearfix support-row")
+        # support_rows = soup.find_all("div", class_="clearfix support-row")
 
-        for row in support_rows:
-            link_elements = row.find_all("a")
-            for link in link_elements:
-                href = link.get("href")
-                if href:
-                    full_url = urljoin(self.base_url, href)
-                    links.append(full_url)
+        # for row in support_rows:
+        #     link_elements = row.find_all("a")
+        #     for link in link_elements:
+        #         href = link.get("href")
+        #         if href:
+        #             full_url = urljoin(self.base_url, href)
+        #             links.append(full_url)
+
+        link_elements = soup.find_all("a")
+        for link in link_elements:
+            href = link.get("href")
+            if href and href.startswith("https://www.bu.edu/tech/support/research/"):
+                full_url = urljoin(self.base_url, href)
+                links.append(full_url)
 
         return links
 
