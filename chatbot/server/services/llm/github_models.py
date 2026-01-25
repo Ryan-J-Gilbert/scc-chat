@@ -106,7 +106,6 @@ class GithubModelsLLMService(BaseLLMService):
         tool_definitions = self._get_tool_definitions()
         
         logger.debug(f"Calling GitHub Models API with {len(openai_messages)} messages")
-        logger.info(f"TEMPTEMP: {openai_messages}")
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=openai_messages,
