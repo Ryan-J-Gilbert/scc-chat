@@ -179,10 +179,9 @@ Just type your question and I'll do my best to help!
                     # Display assistant message
                     self.display_assistant_message(content)
             elif role == "tool":
-                # Optionally display tool results (currently hidden)
-                # You could uncomment this to see tool results:
-                self.console.print(f"[dim]Tool result: {content[:100]}...[/dim]")
-                pass
+                if content:
+                    self.console.print("[dim]Tool result:[/dim]")
+                    self.console.print(Text(content, style="dim"))
         
         # Update the displayed message count
         self.displayed_message_count = len(messages)

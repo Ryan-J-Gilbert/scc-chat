@@ -1,6 +1,8 @@
 """Application configuration using Pydantic settings."""
 
 from typing import Optional
+
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +17,14 @@ class Settings(BaseSettings):
     chroma_db_path: str = "../chroma_db"
     qa_collection_name: str = "qa_collection"
     docs_collection_name: str = "scc_documentation"
+
+    # RAG retrieval — Chroma default HNSW space is squared L²; lower = closer.
+    # Logs on this project showed useful hits often ≤ ~1.0 and junk tail > ~1.0.
+    # Set RAG_MAX_DISTANCE=0 to disable (keep all top-k results).
+    rag_max_distance: float = Field(default=1.0)
+    # Doc body chars per hit in search_documentation tool output (LLM + client).
+    # Default ~12k fits typical ingested pages without huge tool payloads. RAG_DOCS_CONTENT_MAX_CHARS=0 = no cap.
+    rag_docs_content_max_chars: int = Field(default=12000)
     
     # LLM Configuration
     default_model: str = "gpt-4o-mini"
