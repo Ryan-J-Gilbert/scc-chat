@@ -178,12 +178,9 @@ class BUResearchScraper:
             if article_data:
                 self.save_article(article_data)
 
-        # Find links to follow
-        links_to_follow = []
-
-        # Check for support rows
-        if soup.find("div", class_="clearfix support-row"):
-            links_to_follow.extend(self.extract_links_from_support_rows(soup))
+        # Find links to follow from every visited page.
+        # URL prefix filtering is handled in extract_links_from_support_rows.
+        links_to_follow = self.extract_links_from_support_rows(soup)
 
         # Follow links
         for link in links_to_follow:
