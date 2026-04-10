@@ -2,7 +2,7 @@ import io
 import os
 import re
 import time
-from urllib.parse import urljoin
+from urllib.parse import urldefrag, urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,11 +13,17 @@ SKIP_ARTICLES = set(
 )
 
 
+def crawl_key(url: str) -> str:
+    """Strip #fragment; same document for HTTP and for visit deduplication."""
+    base, _frag = urldefrag(url)
+    return base
+
+
 class BUResearchScraper:
     def __init__(self, base_url, output_dir="scraped_content"):
         self.base_url = base_url
         self.output_dir = output_dir
-        self.visited_urls = SKIP_ARTICLES
+        self.visited_urls = {crawl_key(u) for u in SKIP_ARTICLES}
         self._markitdown = MarkItDown()
 
         # Create output directory if it doesn't exist
@@ -126,25 +132,27 @@ class BUResearchScraper:
             href = link.get("href")
             if href and href.startswith("https://www.bu.edu/tech/support/research/"):
                 full_url = urljoin(self.base_url, href)
-                links.append(full_url)
+                links.append(crawl_key(full_url))
 
-        return links
+        # Unique order-preserving (fragment variants collapse to one URL)
+        return list(dict.fromkeys(links))
 
     def scrape_recursively(self, url, depth=1, max_depth=10):
         """Recursively scrape articles and their linked pages."""
-        if depth > max_depth or url in self.visited_urls:
+        canonical = crawl_key(url)
+        if depth > max_depth or canonical in self.visited_urls:
             return
 
-        self.visited_urls.add(url)
-        print(f"Visiting: {url} (depth {depth})")
+        self.visited_urls.add(canonical)
+        print(f"Visiting: {canonical} (depth {depth})")
 
-        soup = self.get_soup(url)
+        soup = self.get_soup(canonical)
         if not soup:
             return
 
         # Check if this is an article page
         if soup.find("div", class_="page-title") or soup.find("div", class_="entry"):
-            article_data = self.extract_article_content(url)
+            article_data = self.extract_article_content(canonical)
             if article_data:
                 self.save_article(article_data)
 
@@ -154,10 +162,11 @@ class BUResearchScraper:
 
         # Follow links
         for link in links_to_follow:
-            if link not in self.visited_urls:
+            next_key = crawl_key(link)
+            if next_key not in self.visited_urls:
                 # Sleep briefly to avoid overwhelming the server
                 time.sleep(0.1)
-                self.scrape_recursively(link, depth + 1, max_depth)
+                self.scrape_recursively(next_key, depth + 1, max_depth)
 
     def extract_table_of_contents(self, soup):
         """Extract table of contents links if available."""
