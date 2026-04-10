@@ -11,6 +11,7 @@ charset-normalizer==3.4.4
 chromadb==1.4.1
 click==8.3.1
 coloredlogs==15.0.1
+defusedxml==0.7.1
 distro==1.9.0
 dnspython==2.8.0
 durationpy==0.10
@@ -42,7 +43,10 @@ jiter==0.12.0
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 kubernetes==34.1.0
+magika==0.6.3
 markdown-it-py==4.0.0
+markdownify==1.2.2
+markitdown==0.1.5
 MarkupSafe==3.0.3
 mdurl==0.1.2
 mmh3==5.2.0
