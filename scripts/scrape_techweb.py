@@ -1,9 +1,12 @@
+import io
+import os
+import re
+import time
+from urllib.parse import urljoin
+
 import requests
 from bs4 import BeautifulSoup
-import os
-import time
-import re
-from urllib.parse import urljoin
+from markitdown import MarkItDown, StreamInfo
 
 SKIP_ARTICLES = set(
     ["https://www.bu.edu/tech/support/research/whats-happening/updates/"]
@@ -15,6 +18,7 @@ class BUResearchScraper:
         self.base_url = base_url
         self.output_dir = output_dir
         self.visited_urls = SKIP_ARTICLES
+        self._markitdown = MarkItDown()
 
         # Create output directory if it doesn't exist
         if not os.path.exists(output_dir):
@@ -67,60 +71,26 @@ class BUResearchScraper:
             print(f"Could not find content in {article_url}")
             return None
 
-        # Convert content to markdown
-        markdown_content = f"# {title}\n\n"
+        html_fragment = str(content_div)
+        html_bytes = io.BytesIO(html_fragment.encode("utf-8"))
+        stream_info = StreamInfo(
+            extension=".html", mimetype="text/html", charset="utf-8"
+        )
+        try:
+            result = self._markitdown.convert_stream(html_bytes, stream_info=stream_info)
+        except Exception as e:
+            print(f"MarkItDown conversion failed for {article_url}: {e}")
+            return None
 
-        # Process content elements
-        for element in content_div.find_all(
-            ["p", "h2", "h3", "h4", "ul", "ol", "pre", "code"]
-        ):
-            # Skip empty elements
-            if not element.text.strip():
-                continue
+        body = (
+            (getattr(result, "markdown", None) or getattr(result, "text_content", None) or "")
+            .strip()
+        )
+        if not body:
+            print(f"MarkItDown produced empty markdown for {article_url}")
+            return None
 
-            if element.name == "h2":
-                markdown_content += f"\n## {element.text.strip()}\n\n"
-            elif element.name == "h3":
-                markdown_content += f"\n### {element.text.strip()}\n\n"
-            elif element.name == "h4":
-                markdown_content += f"\n#### {element.text.strip()}\n\n"
-            elif element.name == "p":
-                # Skip elements that are just anchors or contain only images
-                if element.find("a", {"name": True}) and len(element.text.strip()) == 0:
-                    continue
-
-                markdown_content += f"{element.text.strip()}\n\n"
-            elif element.name == "ul" or element.name == "ol":
-                # Instead of getting the whole list text, process each list item
-                for li in element.find_all("li", recursive=False):
-                    prefix = "* " if element.name == "ul" else "1. "
-
-                    # Handle nested lists
-                    if li.find(["ul", "ol"]):
-                        try:
-                            markdown_content += f"{prefix}{li.contents[0].strip() if li.contents else ''}\n"
-
-                            for nested_list in li.find_all(
-                                ["ul", "ol"], recursive=False
-                            ):
-                                for nested_li in nested_list.find_all("li"):
-                                    nested_prefix = (
-                                        "  * " if nested_list.name == "ul" else "  1. "
-                                    )  # doesnt properly handle ol right
-                                    markdown_content += (
-                                        f"{nested_prefix}{nested_li.text.strip()}\n"
-                                    )
-                        except:
-                            pass
-                    else:
-                        markdown_content += f"{prefix}{li.text.strip()}\n"
-
-                markdown_content += "\n"
-            elif element.name == "pre" or element.name == "code":
-                # Extract code blocks - common in tech documentation
-                code_text = element.text.strip()
-                if code_text:
-                    markdown_content += f"```\n{code_text}\n```\n\n"
+        markdown_content = f"# {title}\n\n{body}"
 
         return {"title": title, "content": markdown_content, "url": article_url}
 
